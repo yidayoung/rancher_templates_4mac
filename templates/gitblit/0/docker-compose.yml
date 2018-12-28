@@ -1,0 +1,16 @@
+version: '2'
+services:
+  gitblit-server:
+    image: java
+    stdin_open: true
+    working_dir: /git
+    volumes:
+      - ${GITDIR}:/git
+    tty: true
+    ports:
+      - ${PORT}:9001
+    command:
+      - sh
+      - gitblit.sh
+    network_mode: "bridge"
+

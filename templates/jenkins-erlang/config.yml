@@ -1,0 +1,5 @@
+name: Jenkins-erlang
+description: |
+  带erlang环境的jenkins
+version: v0.0.1
+category: Tool

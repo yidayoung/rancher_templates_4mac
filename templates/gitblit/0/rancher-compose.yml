@@ -1,0 +1,18 @@
+.catalog:
+  name: GitBlit
+  version: "1.0.0"
+  description: |
+    GitBlit server.
+  questions:
+    - variable: "GITDIR"
+      type: "string"
+      label: "GitBlitDir"
+      description: "GitBlit 程序所在目录"
+      required: true
+      default: /Users/git/gitblit-1.8.0
+    - variable: "PORT"
+      type: "int"
+      label: "Port Number"
+      description: "对外开发的http端口，也就是对外映射的8080端口"
+      default: 9002
+      required: true

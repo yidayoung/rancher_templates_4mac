@@ -1,0 +1,5 @@
+name: MongoDB
+description: |
+  MongoDB for mac
+version: "1.0.0"
+category: Databases

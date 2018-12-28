@@ -1,0 +1,33 @@
+version: '2'
+services:
+  mongo-server:
+    image: mongo:${MongoVersion}
+    volumes:
+    {{- if (.Values.DataDir)}}
+      - ${DataDir}:/data
+    {{- end}}
+    {{- if (.Values.LogPath)}}
+      - ${LogPath}:/data/log
+    {{- end}}
+    ports:
+      - ${PORT}:27017/tcp
+    command:
+      - mongod
+      - --logappend
+      - --logpath
+      {{- if (.Values.LogPath)}}
+      - /data/log/mongo.log
+      {{- else}}
+      - /data/mongo.log
+      {{- end}}
+      {{- if eq .Values.Auth "true"}}
+      - --auth
+      {{- end}}
+
+    network_mode: "bridge"
+
+    environment:
+      {{- if (.Values.UserName) and (.Values.PassWord)}}
+      - MONGO_INITDB_ROOT_USERNAME=${UserName}
+      - MONGO_INITDB_ROOT_PASSWORD=${PassWord}
+      {{- end}}

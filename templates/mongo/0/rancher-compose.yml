@@ -1,0 +1,47 @@
+version: '2'
+.catalog:
+  name: GitBlit
+  version: "1.0.0"
+  description: |
+    GitBlit server.
+  questions:
+    - variable: "MongoVersion"
+      type: "string"
+      label: "MongoVersion"
+      description: "MongoDB版本，只能选择docker下支持的版本，对应镜像选择"
+      required: true
+      default: 3.2
+    - variable: "DataDir"
+      type: "string"
+      label: "DataDir"
+      description: "MongoDB data目录，指定后数据存放在映射目录的db子目录下，不指定的话后面用docker inspect 命令去找实际挂载目录"
+      required: false
+      default: /data
+    - variable: "PORT"
+      type: "int"
+      label: "Port Number"
+      description: "对外端口，也就是对外映射的27017端口"
+      default: 27017
+      required: true
+    - variable: "Auth"
+      type: "boolean"
+      label: "Auth"
+      description: "是否开启校验，第一次别开，不然创建不了用户，后面想开的时候升级改下选项就行了；如果映射的data目录是已经创建过用户的目录可以选择开启"
+      default: false
+      required: true
+    - variable: "LogPath"
+      type: "string"
+      label: "LogPath"
+      description: "日志路径，文件夹必须存在！"
+      default: /data/log
+      required: false
+    - variable: "UserName"
+      type: "string"
+      label: "UserName"
+      description: "如果第一次初始化，可以指定初始化后的用户名"
+      required: false
+    - variable: "PassWord"
+      type: "string"
+      label: "PassWord"
+      description: "配合初始化用户名的初始密码"
+      required: false
