@@ -29,22 +29,6 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          livenessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 30
-            periodSeconds: 2
-            successThreshold: 1
-            tcpSocket:
-              port: {{ .Values.game_port }}
-            timeoutSeconds: 2
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 3
-            periodSeconds: 2
-            successThreshold: 2
-            tcpSocket:
-              port: {{ .Values.game_port }}
-            timeoutSeconds: 2
           ports:
             - name: gameport
               containerPort: {{ .Values.game_port }}
@@ -89,7 +73,6 @@ spec:
           workingDir: /data/bed
           resources: {}
       restartPolicy: Always
-      hostNetwork: true
       volumes:
       - hostPath:
           path: "{{ .Values.game_dir }}/game_server{{ .Values.serverid }}"
