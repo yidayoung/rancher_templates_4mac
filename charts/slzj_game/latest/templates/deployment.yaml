@@ -1,0 +1,71 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: game-server
+  namespace: '{{.NAMESPACE}}'
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector: {}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: erlang:19-slim
+        imagePullPolicy: IfNotPresent
+        name: game{{.SERVERID}}
+        securityContext:
+          privileged: false
+        volumeMounts:
+        - mountPath: /server/
+          name: data
+        workingDir: /server
+        tty: true
+        stdin: true
+        env:
+        - name: GAME_PORT
+          value: '{{.SERVER_GAME_PORT}}'
+        - name: GAME_SERVER_ID
+          value: '{{.SERVERID}}'
+        - name: HOST_IP
+          value: {{.HOST_IP}}
+        - name: IS_MASTER
+          value: "{{.IS_MASTER}}"
+        - name: DATABASE
+          value: {{.DATABASE}}
+        - name: DATABASE_HOST
+          value: {{.DATABASE_HOST}}
+        - name: MASTER_IP
+          value: {{.MASTER_IP}}
+      serviceAccountName: ""
+      volumes:
+      - hostPath:
+          path: /data/game_server{{.SERVERID}}
+        name: data
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: game'{{.SERVERID}}'
+  namespace: '{{.NAMESPACE}}'
+spec:
+  ports:
+  - name: game_port
+    nodePort: 0
+    port: {{.SERVER_GAME_PORT}}
+    protocol: TCP
+    targetPort: {{.SERVER_GAME_PORT}}
+  selector: {}
+  type: ClusterIP
+status:
+  loadBalancer: {}

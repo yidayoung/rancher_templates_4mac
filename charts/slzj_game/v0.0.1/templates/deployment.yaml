@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "slzj-game.fullname" . }}
+  namespace: slzj-game
+  labels:
+    app.kubernetes.io/name: {{ include "slzj-game.name" . }}
+    helm.sh/chart: {{ include "slzj-game.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "slzj-game.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 25%
+      type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "slzj-game.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 2
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.game_port }}
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 3
+            periodSeconds: 2
+            successThreshold: 2
+            tcpSocket:
+              port: {{ .Values.game_port }}
+            timeoutSeconds: 2
+          ports:
+            - name: gameport
+              containerPort: {{ .Values.game_port }}
+              hostPort: {{ .Values.game_port }}
+              protocol: TCP
+            {{- if .Values.pay_port }}
+            - name: pay_port
+              containerPort: {{ .Values.pay_port }}
+              hostPort: {{ .Values.pay_port }}
+              protocol: TCP
+            {{- end}}
+            {{- if .Values.ctrl_port }}
+            - name: ctrl_port
+              containerPort: {{ .Values.ctrl_port }}
+              hostPort: {{ .Values.ctrl_port }}
+              protocol: TCP
+            {{- end}}
+          args:
+            - bash
+            - -c
+            - rm -r /data/bed/*; wget -O /data/bed/slzj_game.tar.gz {{ .Values.pack_url }}; tar -xzvf /data/bed/slzj_game.tar.gz -C /data/bed/ && bash /data/bed/slzj_game/script/docker_start.sh
+          env:
+            - name: GAME_PORT
+              value: "{{ .Values.game_port }}"
+            - name: GAME_SERVER_ID
+              value: "{{ .Values.serverid }}"
+            - name: HOST_IP
+              value: {{ .Values.host_ip }}
+            - name: IS_MASTER
+              value: "{{ .Values.ismaster }}"
+            - name: DATABASE
+              value: {{ .Values.database }}
+            - name: DATABASE_HOST
+              value: {{ .Values.database_host }}
+            - name: MASTER_IP
+              value: {{ .Values.master_ip }}
+          tty: true
+          stdin: true
+          volumeMounts:
+              - mountPath: /data/bed
+                name: bed
+          workingDir: /data/bed
+          resources: {}
+      restartPolicy: Always
+      hostNetwork: true
+      volumes:
+      - hostPath:
+          path: "{{ .Values.game_dir }}/game_server{{ .Values.serverid }}"
+          type: DirectoryOrCreate
+        name: bed
+

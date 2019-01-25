@@ -1,0 +1,87 @@
+categories:
+- GameServer
+questions:
+- variable: pack_url
+  description: "游戏服最新包所在目录，URL目录，最后会调用wget来获取，一般从jenkins构建结果那边拷贝一个url；
+  参数可以不填，不填的时候就不会wget，也就是版本包目录里必须有版本包；
+  填了的时候会无视版本包目录"
+  label: "版本包下载地址"
+  required: false
+  type: string
+  default: http://10.0.11.240:9000/view/slzj/job/slzj_game/lastSuccessfulBuild/artifact/slzj_game.tar.gz
+  group: "代码源"
+- variable: game_dir
+  description: "游戏服挂载目录，每次开服的时候会按照game_serverid的规则从最新包创建游戏服"
+  label: "生产床目录"
+  required: true
+  type: string
+  default: /data/docker_data/slzj_game_bed
+  group: "代码源"
+- variable: serverid
+  description: "游戏服的服务器ID"
+  label: "服务器ID"
+  required: true
+  type: int
+  default: 11
+  min: 1
+  max: 32767
+  group: "服务器配置"
+- variable: game_port
+  description: "游戏服登陆的端口，一般按照10000+serverid指定,登陆端口要导出，所以必须显示指定"
+  label: "登陆的端口"
+  required: true
+  type: int
+  default: 10011
+  min: 1
+  max: 32767
+  group: "服务器配置"
+- variable: host_ip
+  description: "一般指的是主机所在的外部ip，用来让游戏服给登陆服推送时用的，
+  同时如果database_host没填的时候，也就意味着这个地址的27017端口要提供mongo服务，如果master_ip没填的话，也就意味着这个ip提供了game_master@host_ip的节点来作为主服"
+  label: "主机IP"
+  required: true
+  type: string
+  default: "10.0.11.66"
+  group: "服务器配置"
+- variable: pay_port
+  description: "游戏服充值的端口，可选参数，如果不填不会导出，取值为11000+serverid，自己要填的话注意和主机上的其他端口不要冲突"
+  label: "充值端口"
+  required: false
+  type: int
+  min: 1
+  max: 32767
+  group: "服务器配置"
+- variable: ctrl_port
+  description: "游戏服后台的端口，可选参数，如果不填不会导出，取值为12000+serverid，自己要填的话注意和主机上的其他端口不要冲突"
+  label: "后台端口"
+  required: false
+  type: int
+  min: 1
+  max: 32767
+  group: "服务器配置"
+- variable: database_host
+  description: "服务器指定数据库host，可选参数，不填默认为$HOST_IP:27017，如果要填的话记得带上端口，例如10.0.11.240:27017"
+  label: "数据库host"
+  required: false
+  type: string
+  group: "服务器配置"
+- variable: database
+  description: "服务器指定数据库名字，可选参数，不填默认为game${serverid}"
+  label: "数据库名称"
+  required: false
+  type: string
+  group: "服务器配置"
+- variable: ismaster
+  description: "是否为主服，默认的是false，也就是普通游戏服"
+  label: "当前服务器是否为跨服主服"
+  required: true
+  type: boolean
+  default: false
+  group: "跨服配置"
+  show_subquestion_if: false
+  subquestions:
+  - variable: master_ip
+    description: "主服ip，不填默认的是HostIP，一般不需要修改"
+    label: "主服的ip"
+    required: false
+    type: string

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "slzj-login.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "slzj-login.name" . }}
+    helm.sh/chart: {{ include "slzj-login.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "slzj-login.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 25%
+      type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "slzj-login.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: login_port
+              containerPort: {{ .Values.login_port }}
+              hostPort: {{ .Values.login_port }}
+              protocol: TCP
+            {{- if .Values.ctrl_port }}
+            - name: ctrl_port
+              containerPort: {{ .Values.ctrl_port }}
+              hostPort: {{ .Values.ctrl_port }}
+              protocol: TCP
+            {{- end}}
+          args:
+            - bash
+            - -c
+            - rm -r /data/bed/*; wget -O /data/bed/slzj_login.tar.gz {{ .Values.pack_url }}; tar -xzvf /data/bed/slzj_login.tar.gz -C /data/bed/ && bash /data/bed/slzj_login/login.sh start true
+          env:
+            - name: GAME_PORT
+              value: "{{ .Values.login_port }}"
+            - name: CTRL_PORT
+              value: "{{ .Values.ctrl_port }}"
+          tty: true
+          stdin: true
+          volumeMounts:
+              - mountPath: /data/bed
+                name: bed
+          workingDir: /data/bed
+          resources: {}
+      restartPolicy: Always
+      hostNetwork: true
+      volumes:
+      - hostPath:
+          path: "{{ .Values.game_dir }}/login_server"
+          type: DirectoryOrCreate
+        name: bed
+
